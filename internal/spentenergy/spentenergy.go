@@ -1,6 +1,7 @@
 package spentenergy
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -12,18 +13,62 @@ const (
 	walkingCaloriesCoefficient = 0.5  // коэффициент для расчета калорий при ходьбе.
 )
 
-func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
-	// TODO: реализовать функцию
-}
-
-func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
-	// TODO: реализовать функцию
-}
-
-func MeanSpeed(steps int, height float64, duration time.Duration) float64 {
-	// TODO: реализовать функцию
-}
-
+// Distance вычисляет дистанцию в километрах по количеству шагов и росту пользователя (в метрах).
 func Distance(steps int, height float64) float64 {
-	// TODO: реализовать функцию
+	stepLength := height * stepLengthCoefficient
+	distanceInMeters := float64(steps) * stepLength
+	return distanceInMeters / mInKm
+}
+
+// MeanSpeed вычисляет среднюю скорость в км/ч.
+func MeanSpeed(steps int, height float64, duration time.Duration) float64 {
+	if duration <= 0 || steps < 0 {
+		return 0
+	}
+	distance := Distance(steps, height)
+	hours := duration.Hours()
+	return distance / hours
+}
+
+// RunningSpentCalories рассчитывает количество калорий, потраченных при беге.
+func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
+	if steps <= 0 {
+		return 0, fmt.Errorf("количество шагов должно быть положительным")
+	}
+	if weight <= 0 {
+		return 0, fmt.Errorf("вес должен быть положительным")
+	}
+	if height <= 0 {
+		return 0, fmt.Errorf("рост должен быть положительным")
+	}
+	if duration <= 0 {
+		return 0, fmt.Errorf("длительность должна быть положительной")
+	}
+
+	meanSpeed := MeanSpeed(steps, height, duration)
+	durationInMinutes := duration.Minutes()
+	calories := (weight * meanSpeed * durationInMinutes) / minInH
+	return calories, nil
+}
+
+// WalkingSpentCalories рассчитывает количество калорий, потраченных при ходьбе.
+func WalkingSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
+	if steps <= 0 {
+		return 0, fmt.Errorf("количество шагов должно быть положительным")
+	}
+	if weight <= 0 {
+		return 0, fmt.Errorf("вес должен быть положительным")
+	}
+	if height <= 0 {
+		return 0, fmt.Errorf("рост должен быть положительным")
+	}
+	if duration <= 0 {
+		return 0, fmt.Errorf("длительность должна быть положительной")
+	}
+
+	meanSpeed := MeanSpeed(steps, height, duration)
+	durationInMinutes := duration.Minutes()
+	calories := (weight * meanSpeed * durationInMinutes) / minInH
+	calories *= walkingCaloriesCoefficient
+	return calories, nil
 }
